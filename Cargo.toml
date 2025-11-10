@@ -1,0 +1,25 @@
+[package]
+name = "qstr"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.87"
+description = "Cache-efficient, stack-allocated string types"
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/tindzk/qstr"
+keywords = ["string", "utf8", "fixed-length", "variable-length", "no_std", "stack", "embedded", "performance"]
+categories = ["embedded", "data-structures", "no-std", "wasm"]
+
+[features]
+std = []
+serde = ["dep:serde", "dep:serde_json"]
+default = ["std"]
+
+[dependencies]
+serde = { version = ">=1.0", features = ["derive"], default-features = false, optional = true }
+
+# TODO Only needed for tests
+serde_json = { version = ">=1.0", optional = true }
+
+[package.metadata.docs.rs]
+all-features = true

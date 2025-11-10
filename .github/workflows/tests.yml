@@ -1,0 +1,39 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          default: true
+          target: wasm32-unknown-unknown
+
+      - name: Check WebAssembly compilation
+        run: |
+          cargo build --target wasm32-unknown-unknown --no-default-features
+          cargo build --target wasm32-unknown-unknown --all-features
+
+      - name: Run tests
+        run: |
+          # Run only no_std tests
+          cargo test --no-default-features
+
+          # Run std and serde tests
+          cargo test --all-features
+
+      - name: Run Clippy
+        run: |
+          cargo clippy --all --tests -- -D warnings
