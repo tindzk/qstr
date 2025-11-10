@@ -7,7 +7,7 @@ description = "Cache-efficient, stack-allocated string types"
 license = "Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/tindzk/qstr"
-keywords = ["string", "utf8", "fixed-length", "variable-length", "no_std", "stack", "embedded", "performance"]
+keywords = ["string", "utf8", "no_std", "stack", "embedded"]
 categories = ["embedded", "data-structures", "no-std", "wasm"]
 exclude = [".github/"]
 
