@@ -9,6 +9,7 @@ readme = "README.md"
 repository = "https://github.com/tindzk/qstr"
 keywords = ["string", "utf8", "fixed-length", "variable-length", "no_std", "stack", "embedded", "performance"]
 categories = ["embedded", "data-structures", "no-std", "wasm"]
+exclude = [".github/"]
 
 [features]
 std = []
