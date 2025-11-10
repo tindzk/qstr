@@ -2,7 +2,7 @@
 [![Crates.io](https://img.shields.io/crates/v/qstr.svg)](https://crates.io/crates/qstr)
 [![Docs.rs](https://img.shields.io/docsrs/qstr)](https://docs.rs/qstr)
 [![Licence](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/tindzk/qstr/tests)](https://github.com/tindzk/qstr/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/tindzk/qstr/tests.yml)](https://github.com/tindzk/qstr/actions)
 [![no_std](https://img.shields.io/badge/no__std-%E2%9C%94-blue)](#)
 [![Minimum Rust Version](https://img.shields.io/badge/rustc-1.87+-orange.svg)](#)
 
