@@ -1,11 +1,25 @@
 #![allow(clippy::unusual_byte_groupings)]
 use core::mem;
 
-use crate::{ExceedsCapacity, StrVec, StrVec28, StrVec56, StrVec112};
+use crate::{ExceedsCapacity, StrVec, StrVec28, StrVec56, StrVec112, alignment::Align16};
+
+#[test]
+fn test_size() {
+  assert_eq!(mem::size_of::<StrVec28>(), 32);
+  assert_eq!(mem::size_of::<StrVec56>(), 64);
+  assert_eq!(mem::size_of::<StrVec112>(), 128);
+}
+
+#[test]
+fn test_alignment() {
+  assert_eq!(mem::align_of::<StrVec28>(), 32);
+  assert_eq!(mem::align_of::<StrVec56>(), 64);
+  assert_eq!(mem::align_of::<StrVec112>(), 128);
+}
 
 #[test]
 fn test_type() {
-  let _ = StrVec::<u16, 16>::new();
+  let _ = StrVec::<u16, 16, Align16>::new();
 }
 
 #[test]
@@ -142,13 +156,6 @@ fn test_push_nul() {
 
   assert_eq!(vec.bitmap, 0b0010110000000000000000000000_0000);
   assert_eq!(vec.data, [0; 28]);
-}
-
-#[test]
-fn test_size() {
-  assert_eq!(mem::size_of::<StrVec28>(), 32);
-  assert_eq!(mem::size_of::<StrVec56>(), 64);
-  assert_eq!(mem::size_of::<StrVec112>(), 128);
 }
 
 #[test]

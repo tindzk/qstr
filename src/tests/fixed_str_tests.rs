@@ -1,4 +1,26 @@
-use crate::{ExceedsCapacity, FStr24};
+use core::mem;
+
+use crate::{ExceedsCapacity, FStr8, FStr16, FStr24, FStr32, FStr64, FStr128};
+
+#[test]
+fn test_size() {
+  assert_eq!(mem::size_of::<FStr8>(), 8);
+  assert_eq!(mem::size_of::<FStr16>(), 16);
+  assert_eq!(mem::size_of::<FStr24>(), 24);
+  assert_eq!(mem::size_of::<FStr32>(), 32);
+  assert_eq!(mem::size_of::<FStr64>(), 64);
+  assert_eq!(mem::size_of::<FStr128>(), 128);
+}
+
+#[test]
+fn test_alignment() {
+  assert_eq!(mem::align_of::<FStr8>(), 8);
+  assert_eq!(mem::align_of::<FStr16>(), 16);
+  assert_eq!(mem::align_of::<FStr24>(), 8);
+  assert_eq!(mem::align_of::<FStr32>(), 32);
+  assert_eq!(mem::align_of::<FStr64>(), 64);
+  assert_eq!(mem::align_of::<FStr128>(), 128);
+}
 
 const fn f() -> FStr24 {
   FStr24::const_try_from("abc").unwrap()
@@ -68,7 +90,6 @@ mod std {
 #[cfg(feature = "serde")]
 mod serde_tests {
   use serde_json::Value;
-  use std::{string::ToString, vec};
 
   use crate::FStr24;
 

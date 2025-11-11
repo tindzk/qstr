@@ -40,15 +40,19 @@ use crate::ExceedsCapacity;
 /// # Aliases
 /// See also: [FStr8], [FStr16], [FStr24], [FStr32], [FStr64], [FStr128]
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct FixedStr<const N: usize> {
+pub struct FixedStr<const N: usize, Alignment> {
   data: [u8; N],
+  align: [Alignment; 0],
 }
 
-impl<const N: usize> FixedStr<N> {
+impl<const N: usize, Alignment> FixedStr<N, Alignment> {
   /// Creates a NUL-padded FixedStr. Equivalent to FixedStr::default().
   #[inline]
   pub const fn new() -> Self {
-    FixedStr { data: [0; N] }
+    FixedStr {
+      data: [0; N],
+      align: [],
+    }
   }
 
   /// # Safety
@@ -56,7 +60,7 @@ impl<const N: usize> FixedStr<N> {
   /// Otherwise, [Self::as_str] and [Self::as_str_trimmed] are not well-defined.
   #[inline]
   pub const unsafe fn from_bytes(data: [u8; N]) -> Self {
-    FixedStr { data }
+    FixedStr { data, align: [] }
   }
 
   /// It is possible to construct a FixedStr shorter than its capacity, in which
@@ -76,7 +80,7 @@ impl<const N: usize> FixedStr<N> {
     let bytes = s.as_bytes();
     data[0..length].copy_from_slice(bytes);
 
-    Ok(FixedStr { data })
+    Ok(FixedStr { data, align: [] })
   }
 
   /// Builds FixedStr within a const context
@@ -89,7 +93,10 @@ impl<const N: usize> FixedStr<N> {
 
     let bytes = s.as_bytes();
 
-    let mut t = FixedStr { data: [0; N] };
+    let mut t = FixedStr {
+      data: [0; N],
+      align: [],
+    };
 
     {
       let (left, _) = t.data.split_at_mut(length);
@@ -109,7 +116,10 @@ impl<const N: usize> FixedStr<N> {
     } else {
       let bytes = s.as_bytes();
 
-      let mut t = FixedStr { data: [0; N] };
+      let mut t = FixedStr {
+        data: [0; N],
+        align: [],
+      };
 
       {
         let (left, _) = t.data.split_at_mut(length);
@@ -155,46 +165,46 @@ impl<const N: usize> FixedStr<N> {
   }
 }
 
-impl<const N: usize> Default for FixedStr<N> {
+impl<const N: usize, Alignment> Default for FixedStr<N, Alignment> {
   fn default() -> Self {
     FixedStr::new()
   }
 }
 
-impl<const N: usize> fmt::Display for FixedStr<N> {
+impl<const N: usize, Alignment> fmt::Display for FixedStr<N, Alignment> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     f.write_str(self.as_str())
   }
 }
 
-impl<const N: usize> fmt::Debug for FixedStr<N> {
+impl<const N: usize, Alignment> fmt::Debug for FixedStr<N, Alignment> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     f.write_str(self.as_str_trimmed())
   }
 }
 
-impl<const N: usize> From<&str> for FixedStr<N> {
+impl<const N: usize, Alignment> From<&str> for FixedStr<N, Alignment> {
   fn from(s: &str) -> Self {
     Self::try_from(s).unwrap()
   }
 }
 
 #[cfg(feature = "std")]
-impl<const N: usize> From<&String> for FixedStr<N> {
+impl<const N: usize, Alignment> From<&String> for FixedStr<N, Alignment> {
   fn from(s: &String) -> Self {
     Self::try_from(s).unwrap()
   }
 }
 
 #[cfg(feature = "std")]
-impl<const N: usize> From<String> for FixedStr<N> {
+impl<const N: usize, Alignment> From<String> for FixedStr<N, Alignment> {
   fn from(s: String) -> Self {
     Self::try_from(&s).unwrap()
   }
 }
 
 #[cfg(feature = "serde")]
-impl<const N: usize> Serialize for FixedStr<N> {
+impl<const N: usize, Alignment> Serialize for FixedStr<N, Alignment> {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
     S: serde::Serializer,
@@ -204,7 +214,7 @@ impl<const N: usize> Serialize for FixedStr<N> {
 }
 
 #[cfg(feature = "serde")]
-impl<'de, const N: usize> Deserialize<'de> for FixedStr<N> {
+impl<'de, const N: usize, Alignment> Deserialize<'de> for FixedStr<N, Alignment> {
   fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
   where
     D: serde::Deserializer<'de>,

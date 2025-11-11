@@ -6,6 +6,7 @@ use std::string::String;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
+use crate::alignment_resolver::{AlignmentForLength, AlignmentMarker, AlignmentType};
 use crate::bitmap_resolver::{BitmapForLength, BitmapMarker, BitmapType};
 use crate::errors::ExceedsCapacity;
 use crate::str_vec::StrVec;
@@ -43,24 +44,26 @@ use crate::FStr64;
 ///
 /// See also: [BStr7], [BStr15], [BStr31], [BStr63], [BStr127]
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct BoundedStr<const N: usize> {
+pub struct BoundedStr<const N: usize, Alignment> {
   length: u8,
   data: [u8; N],
+  align: [Alignment; 0],
 }
 
-impl<const N: usize> Default for BoundedStr<N> {
+impl<const N: usize, Alignment> Default for BoundedStr<N, Alignment> {
   fn default() -> Self {
     Self::new()
   }
 }
 
-impl<const N: usize> BoundedStr<N> {
+impl<const N: usize, Alignment> BoundedStr<N, Alignment> {
   /// Create an empty BoundedStr
   #[inline]
   pub const fn new() -> Self {
     Self {
       length: 0,
       data: [0; N],
+      align: [],
     }
   }
 
@@ -86,6 +89,7 @@ impl<const N: usize> BoundedStr<N> {
     BoundedStr {
       length: length as u8,
       data,
+      align: [],
     }
   }
 
@@ -108,6 +112,7 @@ impl<const N: usize> BoundedStr<N> {
       Some(BoundedStr {
         length: length as u8,
         data,
+        align: [],
       })
     }
   }
@@ -131,6 +136,7 @@ impl<const N: usize> BoundedStr<N> {
     Ok(BoundedStr {
       length: length as u8,
       data,
+      align: [],
     })
   }
 
@@ -191,9 +197,10 @@ impl<const N: usize> BoundedStr<N> {
   /// This function is only available for common N values (7, 15, 31 etc.) since
   /// the corresponding bitmap size for StrVec is resolved at compile time using a
   /// type-level mapping.
-  pub fn split(&self, delimiter: &str) -> StrVec<BitmapType<N>, N>
+  pub fn split(&self, delimiter: &str) -> StrVec<BitmapType<N>, N, AlignmentType<N>>
   where
     BitmapMarker: BitmapForLength<N>,
+    AlignmentMarker: AlignmentForLength<N>,
   {
     let s = self.as_str();
 
@@ -219,40 +226,40 @@ impl<const N: usize> BoundedStr<N> {
   }
 }
 
-impl<const N: usize> fmt::Display for BoundedStr<N> {
+impl<const N: usize, Alignment> fmt::Display for BoundedStr<N, Alignment> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     f.write_str(self.as_str())
   }
 }
 
-impl<const N: usize> fmt::Debug for BoundedStr<N> {
+impl<const N: usize, Alignment> fmt::Debug for BoundedStr<N, Alignment> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     f.write_str(self.as_str())
   }
 }
 
-impl<const N: usize> From<&str> for BoundedStr<N> {
+impl<const N: usize, Alignment> From<&str> for BoundedStr<N, Alignment> {
   fn from(s: &str) -> Self {
     Self::try_from(s).unwrap()
   }
 }
 
 #[cfg(feature = "std")]
-impl<const N: usize> From<&String> for BoundedStr<N> {
+impl<const N: usize, Alignment> From<&String> for BoundedStr<N, Alignment> {
   fn from(s: &String) -> Self {
     Self::try_from(s).unwrap()
   }
 }
 
 #[cfg(feature = "std")]
-impl<const N: usize> From<String> for BoundedStr<N> {
+impl<const N: usize, Alignment> From<String> for BoundedStr<N, Alignment> {
   fn from(s: String) -> Self {
     Self::try_from(&s).unwrap()
   }
 }
 
 #[cfg(feature = "serde")]
-impl<const N: usize> Serialize for BoundedStr<N> {
+impl<const N: usize, Alignment> Serialize for BoundedStr<N, Alignment> {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
     S: serde::Serializer,
@@ -262,7 +269,7 @@ impl<const N: usize> Serialize for BoundedStr<N> {
 }
 
 #[cfg(feature = "serde")]
-impl<'de, const N: usize> Deserialize<'de> for BoundedStr<N> {
+impl<'de, const N: usize, Alignment> Deserialize<'de> for BoundedStr<N, Alignment> {
   fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
   where
     D: serde::Deserializer<'de>,
