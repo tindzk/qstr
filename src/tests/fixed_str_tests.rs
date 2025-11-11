@@ -89,8 +89,6 @@ mod std {
 
 #[cfg(feature = "serde")]
 mod serde_tests {
-  use serde_json::Value;
-
   use crate::FStr24;
 
   #[test]
