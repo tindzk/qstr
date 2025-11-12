@@ -32,9 +32,10 @@ This library provides types for common sizes, optimised for cache-line efficienc
 ```rust
 use qstr::BStr15;
 use qstr::StrVec;
+use qstr::Align16;
 
 let str: BStr15 = "aws:us:east:1".into();
-let vec: StrVec<u16, 15> = str.split(":");
+let vec: StrVec<u16, 15, Align16> = str.split(":");
 
 assert_eq!(
   vec.iter().collect::<Vec<_>>(),
