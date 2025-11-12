@@ -81,7 +81,7 @@ use crate::StrVec112;
 /// The following aliases that take into account cache line sizes are available:
 /// [StrVec28], [StrVec56], [StrVec112]
 #[derive(PartialEq, Eq, Copy, Clone)]
-pub struct StrVec<T: Bitmap, const N: usize> {
+pub struct StrVec<T: Bitmap, const N: usize, Alignment> {
   /// Marks each item's end position with a set bit
   pub(crate) bitmap: T,
 
@@ -89,15 +89,18 @@ pub struct StrVec<T: Bitmap, const N: usize> {
   /// Unused space at the end is filled with NUL bytes. Empty items occupy a
   /// single byte, which will also be a NUL byte.
   pub(crate) data: [u8; N],
+
+  align: [Alignment; 0],
 }
 
-impl<T: Bitmap, const N: usize> StrVec<T, N> {
+impl<T: Bitmap, const N: usize, Alignment> StrVec<T, N, Alignment> {
   /// Create empty StrVec
   #[inline]
   pub fn new() -> Self {
     Self {
       bitmap: T::default(),
       data: [0u8; N],
+      align: [],
     }
   }
 
@@ -105,7 +108,7 @@ impl<T: Bitmap, const N: usize> StrVec<T, N> {
   ///
   /// # Safety
   /// This will panic if StrVec's capacity is exceeded
-  pub fn from<'a, S>(values: S) -> StrVec<T, N>
+  pub fn from<'a, S>(values: S) -> Self
   where
     S: IntoIterator<Item = &'a str>,
   {
@@ -113,11 +116,11 @@ impl<T: Bitmap, const N: usize> StrVec<T, N> {
   }
 
   /// Attempts to create a StrVec from an `&str` iterator
-  pub fn try_from<'a, S>(values: S) -> Result<StrVec<T, N>, ExceedsCapacity>
+  pub fn try_from<'a, S>(values: S) -> Result<Self, ExceedsCapacity>
   where
     S: IntoIterator<Item = &'a str>,
   {
-    let mut result = StrVec::<T, N>::new();
+    let mut result = StrVec::<T, N, Alignment>::new();
 
     for v in values {
       result.push(v)?;
@@ -131,7 +134,7 @@ impl<T: Bitmap, const N: usize> StrVec<T, N> {
   /// # Safety
   /// This will panic if StrVec's capacity is exceeded
   #[cfg(feature = "std")]
-  pub fn from_owned<S>(values: S) -> StrVec<T, N>
+  pub fn from_owned<S>(values: S) -> Self
   where
     S: IntoIterator<Item = String>,
   {
@@ -140,11 +143,11 @@ impl<T: Bitmap, const N: usize> StrVec<T, N> {
 
   /// Attempts to create a StrVec from an iterator
   #[cfg(feature = "std")]
-  pub fn try_from_owned<S>(values: S) -> Result<StrVec<T, N>, ExceedsCapacity>
+  pub fn try_from_owned<S>(values: S) -> Result<Self, ExceedsCapacity>
   where
     S: IntoIterator<Item = String>,
   {
-    let mut result = StrVec::<T, N>::new();
+    let mut result = Self::new();
 
     for v in values {
       result.push(&v)?;
@@ -241,39 +244,39 @@ impl<T: Bitmap, const N: usize> StrVec<T, N> {
   }
 }
 
-impl<T: Bitmap, const N: usize> Default for StrVec<T, N> {
+impl<T: Bitmap, const N: usize, Alignment> Default for StrVec<T, N, Alignment> {
   fn default() -> Self {
     Self::new()
   }
 }
 
-impl<T: Bitmap, const N: usize> hash::Hash for StrVec<T, N> {
+impl<T: Bitmap, const N: usize, Alignment> hash::Hash for StrVec<T, N, Alignment> {
   fn hash<H: Hasher>(&self, state: &mut H) {
     self.data.hash(state);
   }
 }
 
-impl<T: Bitmap + Eq, const N: usize> Ord for StrVec<T, N> {
+impl<T: Bitmap + Eq, const N: usize, Alignment: Eq> Ord for StrVec<T, N, Alignment> {
   fn cmp(&self, other: &Self) -> core::cmp::Ordering {
     self.data.cmp(&other.data)
   }
 }
 
-impl<T: Bitmap + Eq, const N: usize> PartialOrd for StrVec<T, N> {
+impl<T: Bitmap + Eq, const N: usize, Alignment: Eq> PartialOrd for StrVec<T, N, Alignment> {
   fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
     Some(self.cmp(other))
   }
 }
 
 #[cfg(feature = "std")]
-impl<T: Bitmap, const N: usize> fmt::Debug for StrVec<T, N> {
+impl<T: Bitmap, const N: usize, Alignment> fmt::Debug for StrVec<T, N, Alignment> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     self.to_vec().fmt(f)
   }
 }
 
 #[cfg(feature = "serde")]
-impl<T: Bitmap, const N: usize> Serialize for StrVec<T, N> {
+impl<T: Bitmap, const N: usize, Alignment> Serialize for StrVec<T, N, Alignment> {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
     S: serde::Serializer,
@@ -283,7 +286,7 @@ impl<T: Bitmap, const N: usize> Serialize for StrVec<T, N> {
 }
 
 #[cfg(feature = "serde")]
-impl<'de, T: Bitmap, const N: usize> Deserialize<'de> for StrVec<T, N> {
+impl<'de, T: Bitmap, const N: usize, Alignment> Deserialize<'de> for StrVec<T, N, Alignment> {
   fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
   where
     D: serde::Deserializer<'de>,
