@@ -159,16 +159,17 @@ impl<const N: usize, Alignment> BoundedStr<N, Alignment> {
   pub fn push_str(&mut self, s: &str) -> Result<(), ExceedsCapacity> {
     let bytes = s.as_bytes();
     let length = self.length as usize;
+    let new_len = length + bytes.len();
 
-    if length + bytes.len() > N {
+    if new_len > N {
       return Err(ExceedsCapacity {
-        length,
+        length: new_len,
         capacity: N,
       });
     }
 
-    self.data[length..length + bytes.len()].copy_from_slice(bytes);
-    self.length += bytes.len() as u8;
+    self.data[length..new_len].copy_from_slice(bytes);
+    self.length = new_len as u8;
 
     Ok(())
   }
