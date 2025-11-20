@@ -5,6 +5,7 @@ use crate::BStr15;
 use crate::BStr31;
 use crate::BStr63;
 use crate::BStr127;
+use crate::ExceedsCapacity;
 
 #[test]
 fn test_size() {
@@ -35,6 +36,19 @@ fn test_push_str() {
 }
 
 #[test]
+fn test_push_str_exceeds_capacity() {
+  let mut s = BStr7::new();
+
+  assert_eq!(
+    s.push_str("00000000"),
+    Err(ExceedsCapacity {
+      length: 8,
+      capacity: 7
+    })
+  );
+}
+
+#[test]
 fn test_push() {
   let mut s = BStr15::new();
   s.push('a').unwrap();
@@ -61,11 +75,12 @@ fn test_into() {
 
 #[cfg(feature = "std")]
 mod std {
+  use std::format;
   use std::string::String;
   use std::vec;
   use std::vec::Vec;
 
-  use crate::{Align8, Align64, BStr7, BStr63, StrVec};
+  use crate::{Align8, Align64, BStr7, BStr63, ExceedsCapacity, StrVec};
 
   #[test]
   fn test_into_panic() {
@@ -112,6 +127,25 @@ mod std {
         "1",
         "worker0000000000000000000000000000000000000000000"
       ]
+    );
+  }
+
+  #[test]
+  fn test_push_str_exceeds_capacity() {
+    let mut s = BStr7::new();
+    let exceeds_capacity = s.push_str("00000000").unwrap_err();
+
+    assert_eq!(
+      exceeds_capacity,
+      ExceedsCapacity {
+        length: 8,
+        capacity: 7
+      }
+    );
+
+    assert_eq!(
+      format!("{}", exceeds_capacity),
+      "String length (8) exceeds capacity (7)"
     );
   }
 }
