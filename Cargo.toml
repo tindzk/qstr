@@ -1,6 +1,6 @@
 [package]
 name = "qstr"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 rust-version = "1.87"
 description = "Cache-efficient, stack-allocated string types"
