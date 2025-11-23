@@ -27,3 +27,5 @@ impl core::fmt::Display for ExceedsCapacity {
     ))
   }
 }
+
+impl core::error::Error for ExceedsCapacity {}
