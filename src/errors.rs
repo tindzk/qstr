@@ -1,3 +1,4 @@
+use core::error::Error;
 use core::fmt;
 
 /// Length exceeds string's capacity
@@ -19,7 +20,7 @@ impl fmt::Debug for ExceedsCapacity {
   }
 }
 
-impl core::fmt::Display for ExceedsCapacity {
+impl fmt::Display for ExceedsCapacity {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     f.write_fmt(format_args!(
       "String length ({}) exceeds capacity ({})",
@@ -28,4 +29,4 @@ impl core::fmt::Display for ExceedsCapacity {
   }
 }
 
-impl core::error::Error for ExceedsCapacity {}
+impl Error for ExceedsCapacity {}

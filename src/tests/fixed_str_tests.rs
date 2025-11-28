@@ -22,6 +22,15 @@ fn test_alignment() {
   assert_eq!(mem::align_of::<FStr128>(), 128);
 }
 
+#[test]
+fn test_ord() {
+  assert!(FStr8::from("a") < FStr8::from("b"));
+  assert!(FStr16::from("a") < FStr16::from("b"));
+  assert!(FStr32::from("a") < FStr32::from("b"));
+  assert!(FStr64::from("a") < FStr64::from("b"));
+  assert!(FStr128::from("a") < FStr128::from("b"));
+}
+
 const fn f() -> FStr24 {
   FStr24::const_try_from("abc").unwrap()
 }

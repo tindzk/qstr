@@ -164,6 +164,7 @@ pub type StrVec112 = StrVec<u128, 112, Align128>;
 #[cfg(test)]
 mod tests {
   mod bounded_str_tests;
+  mod error_tests;
   mod fixed_str_tests;
   mod str_vec_tests;
 }

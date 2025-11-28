@@ -26,6 +26,15 @@ fn test_alignment() {
 }
 
 #[test]
+fn test_ord() {
+  assert!(BStr7::from("a") < BStr7::from("b"));
+  assert!(BStr15::from("a") < BStr15::from("b"));
+  assert!(BStr31::from("a") < BStr31::from("b"));
+  assert!(BStr63::from("a") < BStr63::from("b"));
+  assert!(BStr127::from("a") < BStr127::from("b"));
+}
+
+#[test]
 fn test_push_str() {
   let mut s = BStr15::new();
   s.push_str("abc").unwrap();
