@@ -104,56 +104,22 @@ impl<T: Bitmap, const N: usize, Alignment> StrVec<T, N, Alignment> {
     }
   }
 
-  /// Create StrVec from an `&str` iterator
+  /// Create StrVec from a `&str` or `String` collection, such as:
+  ///
+  /// - `&[&str]`
+  /// - `&[String]`
+  /// - `Vec<&str>`
+  /// - `Vec<String>`
   ///
   /// # Safety
   /// This will panic if StrVec's capacity is exceeded
-  pub fn from<'a, S>(values: S) -> Self
+  #[track_caller]
+  pub fn from<S>(values: S) -> Self
   where
-    S: IntoIterator<Item = &'a str>,
+    Self: TryFrom<S>,
+    <StrVec<T, N, Alignment> as TryFrom<S>>::Error: core::fmt::Debug,
   {
     Self::try_from(values).unwrap()
-  }
-
-  /// Attempts to create a StrVec from an `&str` iterator
-  pub fn try_from<'a, S>(values: S) -> Result<Self, ExceedsCapacity>
-  where
-    S: IntoIterator<Item = &'a str>,
-  {
-    let mut result = StrVec::<T, N, Alignment>::new();
-
-    for v in values {
-      result.push(v)?;
-    }
-
-    Ok(result)
-  }
-
-  /// Create StrVec from a String iterator
-  ///
-  /// # Safety
-  /// This will panic if StrVec's capacity is exceeded
-  #[cfg(feature = "std")]
-  pub fn from_owned<S>(values: S) -> Self
-  where
-    S: IntoIterator<Item = String>,
-  {
-    Self::try_from_owned(values).unwrap()
-  }
-
-  /// Attempts to create a StrVec from an iterator
-  #[cfg(feature = "std")]
-  pub fn try_from_owned<S>(values: S) -> Result<Self, ExceedsCapacity>
-  where
-    S: IntoIterator<Item = String>,
-  {
-    let mut result = Self::new();
-
-    for v in values {
-      result.push(&v)?;
-    }
-
-    Ok(result)
   }
 
   /// Number of items in O(1)
@@ -268,6 +234,104 @@ impl<T: Bitmap + Eq, const N: usize, Alignment: Eq> PartialOrd for StrVec<T, N, 
   }
 }
 
+impl<T: Bitmap, const N: usize, Alignment> TryFrom<&[&str]> for StrVec<T, N, Alignment> {
+  type Error = ExceedsCapacity;
+
+  /// Attempts to create a StrVec from an `&str` slice
+  fn try_from(values: &[&str]) -> Result<Self, Self::Error> {
+    let mut result = Self::new();
+
+    for v in values {
+      result.push(v)?;
+    }
+
+    Ok(result)
+  }
+}
+
+impl<T: Bitmap, const N: usize, const I: usize, Alignment> TryFrom<[&str; I]>
+  for StrVec<T, N, Alignment>
+{
+  type Error = ExceedsCapacity;
+
+  /// Attempts to create a StrVec from an `&str` array
+  fn try_from(values: [&str; I]) -> Result<Self, Self::Error> {
+    let mut result = Self::new();
+
+    for v in values {
+      result.push(v)?;
+    }
+
+    Ok(result)
+  }
+}
+
+#[cfg(feature = "std")]
+impl<T: Bitmap, const N: usize, Alignment> TryFrom<Vec<&str>> for StrVec<T, N, Alignment> {
+  type Error = ExceedsCapacity;
+
+  /// Attempts to create a StrVec from an `&str` vector
+  fn try_from(values: Vec<&str>) -> Result<Self, Self::Error> {
+    let mut result = Self::new();
+
+    for v in values {
+      result.push(v)?;
+    }
+
+    Ok(result)
+  }
+}
+
+#[cfg(feature = "std")]
+impl<T: Bitmap, const N: usize, Alignment> TryFrom<&[String]> for StrVec<T, N, Alignment> {
+  type Error = ExceedsCapacity;
+
+  /// Attempts to create a StrVec from a `String` slice
+  fn try_from(values: &[String]) -> Result<Self, Self::Error> {
+    let mut result = Self::new();
+
+    for v in values {
+      result.push(v)?;
+    }
+
+    Ok(result)
+  }
+}
+
+#[cfg(feature = "std")]
+impl<T: Bitmap, const N: usize, const I: usize, Alignment> TryFrom<[String; I]>
+  for StrVec<T, N, Alignment>
+{
+  type Error = ExceedsCapacity;
+
+  /// Attempts to create a StrVec from a `String` array
+  fn try_from(values: [String; I]) -> Result<Self, Self::Error> {
+    let mut result = Self::new();
+
+    for v in values {
+      result.push(&v)?;
+    }
+
+    Ok(result)
+  }
+}
+
+#[cfg(feature = "std")]
+impl<T: Bitmap, const N: usize, Alignment> TryFrom<Vec<String>> for StrVec<T, N, Alignment> {
+  type Error = ExceedsCapacity;
+
+  /// Attempts to create a StrVec from a `String` vector
+  fn try_from(values: Vec<String>) -> Result<Self, Self::Error> {
+    let mut result = Self::new();
+
+    for v in values {
+      result.push(&v)?;
+    }
+
+    Ok(result)
+  }
+}
+
 #[cfg(feature = "std")]
 impl<T: Bitmap, const N: usize, Alignment> fmt::Debug for StrVec<T, N, Alignment> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -292,6 +356,6 @@ impl<'de, T: Bitmap, const N: usize, Alignment> Deserialize<'de> for StrVec<T, N
     D: serde::Deserializer<'de>,
   {
     let v = Vec::<String>::deserialize(deserializer)?;
-    StrVec::try_from_owned(v).map_err(serde::de::Error::custom)
+    StrVec::try_from(v).map_err(serde::de::Error::custom)
   }
 }

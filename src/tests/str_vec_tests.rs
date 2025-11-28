@@ -199,6 +199,30 @@ mod std {
   }
 
   #[test]
+  fn test_from_slice() {
+    let arr: &[&str] = &["a", "b"];
+    let vec = StrVec56::from(arr);
+
+    assert_eq!(vec.iter().collect::<Vec<_>>(), vec!["a", "b"]);
+  }
+
+  #[test]
+  fn test_try_from_slice() {
+    let arr: &[&str] = &["a", "b"];
+    let vec = StrVec56::try_from(arr).unwrap();
+
+    assert_eq!(vec.iter().collect::<Vec<_>>(), vec!["a", "b"]);
+  }
+
+  #[test]
+  fn test_try_from_vec() {
+    let arr: Vec<&str> = vec!["a", "b"];
+    let vec = StrVec56::try_from(arr).unwrap();
+
+    assert_eq!(vec.iter().collect::<Vec<_>>(), vec!["a", "b"]);
+  }
+
+  #[test]
   fn test_ord() {
     let s1 = StrVec112::try_from(["ab", "a1"]).unwrap();
     let s2 = StrVec112::try_from(["ab", "a2"]).unwrap();
@@ -253,6 +277,41 @@ mod std {
   fn test_debug() {
     let v = StrVec28::try_from(["a", "b", "c"]).unwrap();
     assert_eq!(format!("{:?}", v), r#"["a", "b", "c"]"#);
+  }
+}
+
+#[cfg(feature = "std")]
+mod std_tests {
+  use std::{
+    string::{String, ToString},
+    vec,
+    vec::Vec,
+  };
+
+  use crate::StrVec56;
+
+  #[test]
+  fn test_from_slice() {
+    let arr: &[String] = &["a".to_string(), "b".to_string()];
+    let vec = StrVec56::from(arr);
+
+    assert_eq!(vec.iter().collect::<Vec<_>>(), vec!["a", "b"]);
+  }
+
+  #[test]
+  fn test_try_from_slice() {
+    let arr: &[String] = &["a".to_string(), "b".to_string()];
+    let vec = StrVec56::try_from(arr).unwrap();
+
+    assert_eq!(vec.iter().collect::<Vec<_>>(), vec!["a", "b"]);
+  }
+
+  #[test]
+  fn test_try_from_vec() {
+    let arr: Vec<String> = vec!["a".to_string(), "b".to_string()];
+    let vec = StrVec56::try_from(arr).unwrap();
+
+    assert_eq!(vec.iter().collect::<Vec<_>>(), vec!["a", "b"]);
   }
 }
 
