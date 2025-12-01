@@ -1,7 +1,5 @@
+use core::fmt;
 use core::hash::{self, Hasher};
-
-#[cfg(feature = "std")]
-use std::fmt;
 
 #[cfg(feature = "std")]
 use std::{string::String, vec::Vec};
@@ -117,7 +115,7 @@ impl<T: Bitmap, const N: usize, Alignment> StrVec<T, N, Alignment> {
   pub fn from<S>(values: S) -> Self
   where
     Self: TryFrom<S>,
-    <StrVec<T, N, Alignment> as TryFrom<S>>::Error: core::fmt::Debug,
+    <StrVec<T, N, Alignment> as TryFrom<S>>::Error: fmt::Debug,
   {
     Self::try_from(values).unwrap()
   }
@@ -332,10 +330,19 @@ impl<T: Bitmap, const N: usize, Alignment> TryFrom<Vec<String>> for StrVec<T, N,
   }
 }
 
-#[cfg(feature = "std")]
 impl<T: Bitmap, const N: usize, Alignment> fmt::Debug for StrVec<T, N, Alignment> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    self.to_vec().fmt(f)
+    f.write_str("[")?;
+
+    for (i, v) in self.iter().enumerate() {
+      if i > 0 {
+        f.write_str(", ")?;
+      }
+
+      write!(f, "{:?}", v)?;
+    }
+
+    f.write_str("]")
   }
 }
 
