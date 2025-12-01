@@ -167,4 +167,5 @@ mod tests {
   mod error_tests;
   mod fixed_str_tests;
   mod str_vec_tests;
+  mod writer_util;
 }

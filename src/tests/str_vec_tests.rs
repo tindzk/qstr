@@ -1,7 +1,12 @@
 #![allow(clippy::unusual_byte_groupings)]
+
+use core::fmt::Write;
 use core::mem;
 
-use crate::{ExceedsCapacity, StrVec, StrVec28, StrVec56, StrVec112, alignment::Align16};
+use crate::{
+  ExceedsCapacity, StrVec, StrVec28, StrVec56, StrVec112, alignment::Align16,
+  tests::writer_util::ByteMutWriter,
+};
 
 #[test]
 fn test_size() {
@@ -173,6 +178,17 @@ fn test_next_offset() {
   assert_eq!(v.next_offset(), 1 + 2 + 3);
 }
 
+#[test]
+fn test_debug() {
+  let v = StrVec28::try_from(["a", "b", "c"]).unwrap();
+
+  let mut buf = [0u8; 20];
+  let mut buf = ByteMutWriter::new(&mut buf[..]);
+  write!(&mut buf, "{:?}", v).unwrap();
+
+  assert_eq!(buf.as_str(), r#"["a", "b", "c"]"#);
+}
+
 #[cfg(feature = "std")]
 mod std {
   use std::collections::HashSet;
@@ -180,7 +196,7 @@ mod std {
   use std::vec;
   use std::{collections::BTreeSet, vec::Vec};
 
-  use crate::{StrVec28, StrVec56, StrVec112};
+  use crate::{StrVec56, StrVec112};
 
   #[test]
   fn test_hash() {
@@ -196,6 +212,30 @@ mod std {
     set.insert(s2);
 
     assert_eq!(set.len(), 2);
+  }
+
+  #[test]
+  fn test_from_slice() {
+    let arr: &[&str] = &["a", "b"];
+    let vec = StrVec56::from(arr);
+
+    assert_eq!(vec.iter().collect::<Vec<_>>(), vec!["a", "b"]);
+  }
+
+  #[test]
+  fn test_try_from_slice() {
+    let arr: &[&str] = &["a", "b"];
+    let vec = StrVec56::try_from(arr).unwrap();
+
+    assert_eq!(vec.iter().collect::<Vec<_>>(), vec!["a", "b"]);
+  }
+
+  #[test]
+  fn test_try_from_vec() {
+    let arr: Vec<&str> = vec!["a", "b"];
+    let vec = StrVec56::try_from(arr).unwrap();
+
+    assert_eq!(vec.iter().collect::<Vec<_>>(), vec!["a", "b"]);
   }
 
   #[test]
@@ -248,11 +288,40 @@ mod std {
     assert_eq!(collected.len(), 56);
     assert_eq!(collected, insert);
   }
+}
+
+#[cfg(feature = "std")]
+mod std_tests {
+  use std::{
+    string::{String, ToString},
+    vec,
+    vec::Vec,
+  };
+
+  use crate::StrVec56;
 
   #[test]
-  fn test_debug() {
-    let v = StrVec28::try_from(["a", "b", "c"]).unwrap();
-    assert_eq!(format!("{:?}", v), r#"["a", "b", "c"]"#);
+  fn test_from_slice() {
+    let arr: &[String] = &["a".to_string(), "b".to_string()];
+    let vec = StrVec56::from(arr);
+
+    assert_eq!(vec.iter().collect::<Vec<_>>(), vec!["a", "b"]);
+  }
+
+  #[test]
+  fn test_try_from_slice() {
+    let arr: &[String] = &["a".to_string(), "b".to_string()];
+    let vec = StrVec56::try_from(arr).unwrap();
+
+    assert_eq!(vec.iter().collect::<Vec<_>>(), vec!["a", "b"]);
+  }
+
+  #[test]
+  fn test_try_from_vec() {
+    let arr: Vec<String> = vec!["a".to_string(), "b".to_string()];
+    let vec = StrVec56::try_from(arr).unwrap();
+
+    assert_eq!(vec.iter().collect::<Vec<_>>(), vec!["a", "b"]);
   }
 }
 
