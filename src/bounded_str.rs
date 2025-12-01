@@ -240,6 +240,7 @@ impl<const N: usize, Alignment> fmt::Debug for BoundedStr<N, Alignment> {
 }
 
 impl<const N: usize, Alignment> From<&str> for BoundedStr<N, Alignment> {
+  #[track_caller]
   fn from(s: &str) -> Self {
     Self::try_from(s).unwrap()
   }
@@ -247,6 +248,7 @@ impl<const N: usize, Alignment> From<&str> for BoundedStr<N, Alignment> {
 
 #[cfg(feature = "std")]
 impl<const N: usize, Alignment> From<&String> for BoundedStr<N, Alignment> {
+  #[track_caller]
   fn from(s: &String) -> Self {
     Self::try_from(s).unwrap()
   }
@@ -254,6 +256,7 @@ impl<const N: usize, Alignment> From<&String> for BoundedStr<N, Alignment> {
 
 #[cfg(feature = "std")]
 impl<const N: usize, Alignment> From<String> for BoundedStr<N, Alignment> {
+  #[track_caller]
   fn from(s: String) -> Self {
     Self::try_from(&s).unwrap()
   }
